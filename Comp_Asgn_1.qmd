@@ -1,0 +1,30 @@
+---
+title: "Competition 1"
+format: html
+editor: visual
+---
+
+```{r}
+#| message: false 
+#| #| code-fold: true 
+library(tidyverse)
+library(tidymodels)
+library(kableExtra)
+library(patchwork)
+
+data <- read_csv("data.csv")
+
+comp <- read_csv("comp.csv")
+```
+
+```{r}
+head(data)
+
+data |>
+  head()
+```
+
+```{r}
+comp |>
+  head()
+```
