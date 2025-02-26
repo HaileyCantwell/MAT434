@@ -1,7 +1,16 @@
 ---
-title: "Competition 1"
+title: Competition
+author: 
+  - name: Hailey Cantwell
+    email: hailey.cantwell@snhu.edu
+    affiliations: 
+      - name: Southern New Hampshire University
 format: html
-editor: visual
+date: 1/8/2024
+date-modified: today
+date-format: long
+theme: night
+toc: true
 ---
 
 ```{r}
@@ -28,3 +37,5 @@ data |>
 comp |>
   head()
 ```
+
+
