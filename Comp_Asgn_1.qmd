@@ -13,7 +13,7 @@ theme: night
 toc: true
 ---
 
-###Loading Data
+####Loading Data
 ```{r}
 #| message: false 
 #| #| code-fold: true 
@@ -23,65 +23,10 @@ library(kableExtra)
 library(patchwork)
 
 data <- read_csv("data.csv")
-
 comp <- read_csv("comp.csv")
 ```
 
 ```{r}
 head(data)
-
-data |>
-  head()
-```
-
-```{r}
-comp |>
-  head()
-```
-
-#### Statement of Purpose
-The goal of this competition is to predict the list price range of homes in Austin, Texas. We are conducting this so that Zillow can provide accurate predictions to their users. 
-##Data Split
-```{r}
-set.seed(123)
-data_splits <- initial_split(data, .80, strata = priceRange)
-train <- training(data_splits)
-test <- testing(data_splits)
-```
-
-
-```{r}
-library(dplyr)
-data %>%
-  count(priceRange) %>%
-  mutate(percent = n / sum(n) * 100)
-
-```
-```{r}
-set.seed(123)
-cv_folds <- vfold_cv(train, v = 5, strata = priceRange)
-
-```
-
-```{r}
-train %>%
-  head() %>%
-  kable() %>%
-  kable_styling()
-
-```
-```{r}
-
-train$priceRange_numeric <- as.numeric(factor(train$priceRange, levels = c("0-250000", "250000-350000", "350000-450000", "450000-650000", "650000+")))
-
-
-```
-
-```{r}
-train %>%
-  count(priceRange) %>%
-  mutate(percent = n / sum(n) * 100) %>%
-  kable() %>%
-  kable_styling()
 ```
 
