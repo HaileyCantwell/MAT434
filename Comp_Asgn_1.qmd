@@ -1,5 +1,5 @@
 ---
-title: Zillow Competition 
+title: Competition
 author: 
   - name: Hailey Cantwell
     email: hailey.cantwell@snhu.edu
@@ -14,11 +14,11 @@ toc: true
 code-fold: true
 ---
 
+#### Loading Data
 ```{r}
 #| echo: false
 #| message: false
 #| warning: false
-
 library(tidyverse)
 library(tidymodels)
 library(kableExtra)
@@ -28,11 +28,15 @@ library(marginaleffects)
 library(tidytext)
 
 options(kable_styling_bootstrap_options = c("hover", "striped"))
+
 theme_set(theme_bw(base_size = 14))
 
-data <- read_csv("data.csv") %>% janitor::clean_names()
-comp <- read_csv("comp.csv") %>% janitor::clean_names()
-data <- data %>% select(-c(description, city, id))
+data <- read_csv("data.csv") %>%
+  janitor::clean_names()
+comp <- read_csv("comp.csv") %>%
+  janitor::clean_names()
+data <- data %>%
+  select(-c(description, city, id))
 
 set.seed(123)
 data_splits <- initial_split(data, prop = 0.85, strata = price_range)
@@ -45,35 +49,20 @@ validation <- training(test_splits)
 test <- testing(test_splits)
 ```
 
----
+## Statement of Purpose
+The purpose of this project is to develop a machine learning model that can predict real estate property price ranges of houses in Austin, TX. This will be utilized by real estate agencies and property buyers/sellers. Accurate predictions may assist in making informed decisions regarding property value on Zillow. 
 
-### Statement of Purpose
-
-The purpose of this project is to develop a machine learning model that can predict real estate property price ranges of houses in Austin, TX. This will be utilized by real estate agencies and property buyers/sellers by identifying key characteristics that potentially influence listing prices.
----
-
-### Executive Summary 
-
----
-
-### Introduction
-
-Within this project we aim to build a classification model that can predict the price ranges of real estate properties using characteristics such as: home type, number of rooms, garage spaces, lot size, and school rating. Understanding the relationship that exists between these variables to property value is critical for potential buyers/sellers and agencies.
----
-
-
-### Exploratory Data Analysis 
-
-To begin our analysis we must begin exploring the structure of the data and visualizing the distribution of the target variable: 'price_range'. Our original data set on listings includes 7498 listings and 13 features (variables). This is after we removed unnecessary features such as descriptions, id, and city. 
-
----
-
-#### Overview of Training Data
+## Exploratory Data Analysis
 
 ```{r}
 head(data) %>%
   kable() %>%
   kable_styling()
+```
+```{r}
+train %>%
+  count(price_range) %>%
+  arrange(price_range)
 ```
 
 ```{r}
@@ -83,37 +72,7 @@ train %>%
   kable() %>%
   kable_styling(full_width = FALSE, bootstrap_options = "striped")
 ```
-
-```{r}
-train %>%
-  count(price_range) %>%
-  mutate(percent = n / sum(n) * 100) %>%
-  kable(digits = 2) %>%
-  kable_styling()
-```
-
-------------------------------------------------------------------------
-
-### Understanding the Target Variable: Price Range
-
-```{r}
-train %>%
-  mutate(price_range = recode(price_range,
-    "0-250000" = "0–250k",
-    "250000-350000" = "250–350k",
-    "350000-450000" = "350–450k",
-    "450000-650000" = "450–650k",
-    "650000+" = "650k+"
-  )) %>%
-  ggplot(aes(x = price_range, fill = price_range)) +
-  geom_bar(color = "black") +
-  labs(
-    title = "Distribution of Homes by Price Range",
-    x = "Price Range",
-    y = "Count"
-  ) +
-  theme_minimal()
-```
+## Distribution of Price Range
 
 ```{r}
 train <- train %>%
@@ -126,8 +85,17 @@ train <- train %>%
     TRUE ~ NA_real_
   ))
 
-train_clean <- train %>% filter(!is.na(estimated_price))
 
+```
+
+```{r}
+train_clean <- train %>%
+  filter(!is.na(estimated_price))
+
+
+```
+
+```{r}
 train %>%
   summarize(
     min_price = min(estimated_price, na.rm = TRUE),
@@ -136,44 +104,33 @@ train %>%
     max_price = max(estimated_price, na.rm = TRUE),
     sd_price = sd(estimated_price, na.rm = TRUE)
   ) %>%
-  pivot_longer(everything(), names_to = "Metric", values_to = "Value") %>%
+  pivot_longer(everything(),
+               names_to = "Metric",
+               values_to = "Value") %>%
   kable(digits = 0) %>%
   kable_styling(full_width = FALSE, bootstrap_options = c("hover", "striped"))
-```
 
+```
+### Estimate Price Distribution 
 ```{r}
-p1 <- train %>%
+train_clean %>%
   ggplot() + 
-  geom_histogram(aes(x = estimated_price, y = after_stat(density)),
-                 bins = 9,
-                 fill = "purple",
-                 color = "black") +
-  geom_density(aes(x = estimated_price),
-               fill = "purple",
-               alpha = 0.4) +
-  labs(x = "Estimated Price", y = "Density")
+  geom_histogram(aes(x = estimated_price), 
+                 fill = "purple", 
+                 color = "black", 
+                 bins = 5) +
+  scale_x_continuous(labels = scales::label_dollar()) +
+  labs(
+    title = "Estimated Price Distribution",
+    x = "Estimated Price",
+    y = "Count"
+  ) +
+  theme_minimal()
 
-p2 <- train %>%
-  ggplot() + 
-  geom_histogram(aes(x = estimated_price, y = after_stat(density)),
-                 bins = 9,
-                 fill = "purple",
-                 color = "black") +
-  geom_density(aes(x = estimated_price),
-               fill = "purple",
-               alpha = 0.4) + 
-  scale_x_log10(labels = scales::label_dollar()) +
-  labs(x = "Estimated Price (log10)", y = "Density")
-
-p1 / p2
+    
 ```
 
-------------------------------------------------------------------------
-
-### Exploring Feature Relationships with Price Range
-
-#### Bedrooms vs. Price
-
+### Project Price Range by Bedrooms
 ```{r}
 train_clean %>%
   ggplot(aes(x = as.factor(num_of_bedrooms), y = estimated_price)) +
@@ -185,179 +142,6 @@ train_clean %>%
     y = "Estimated Price"
   ) +
   theme_minimal()
-```
 
 
-```{r}
-train_clean %>%
-  ggplot(aes(x = log(lot_size_sq_ft + 1), y = estimated_price)) +
-  geom_point(alpha = 0.3, color = "purple") +
-  geom_smooth(method = "loess", se = FALSE, color = "black") +
-  scale_y_continuous(labels = scales::label_dollar()) +
-  labs(
-    title = "Estimated Price vs Log Lot Size",
-    x = "Log(Lot Size Sq Ft + 1)",
-    y = "Estimated Price"
-  ) +
-  theme_minimal()
-
-```
-
-#### Lot Size vs. Price
-
-```{r}
-avg_lot_by_price <- train %>%
-  group_by(price_range) %>%
-  summarize(avg_lot_size = median(lot_size_sq_ft, na.rm = TRUE))
-
-avg_lot_by_price %>%
-  ggplot(aes(x = price_range, y = avg_lot_size, fill = price_range)) +
-  geom_col(color = "black") +
-  scale_y_continuous(labels = scales::label_comma()) +
-  labs(
-    title = "Median Lot Size by Price Range",
-    x = "Price Range",
-    y = "Average Lot Size (sq ft)"
-  ) +
-  theme_minimal()
-```
-
-```{r}
-train_clean %>%
-  ggplot(aes(x = log(lot_size_sq_ft + 1))) +
-  geom_histogram(fill = "steelblue", color = "black") +
-  labs(
-    title = "Distribution of Log Lot Size",
-    x = "Log(Lot Size Sq Ft + 1)",
-    y = "Count"
-  ) +
-  theme_minimal()
-
-```
-
-```{r}
-train_clean %>%
-  ggplot(aes(x = log(lot_size_sq_ft + 1), y = estimated_price)) +
-  geom_point(alpha = 0.3, color = "purple") +
-  geom_smooth(method = "loess", se = FALSE, color = "black") +
-  scale_y_continuous(labels = scales::label_dollar()) +
-  labs(
-    title = "Estimated Price vs Log Lot Size",
-    x = "Log(Lot Size Sq Ft + 1)",
-    y = "Estimated Price"
-  ) +
-  theme_minimal()
-
-
-```
-
-
-
-
-#### Spa Inclusion by Price
-
-```{r}
-train %>%
-  filter(has_spa == TRUE) %>%
-  ggplot(aes(x = price_range, fill = price_range)) +
-  geom_bar(color = "black") +
-  labs(
-    title = "Distribution of Homes WITH a Spa by Price Range",
-    x = "Price Range",
-    y = "Count"
-  ) +
-  theme_minimal()
-```
-
-#### Garage Spaces by Price
-
-```{r}
-train %>%
-  group_by(price_range) %>%
-  summarize(avg_garage_spaces = mean(garage_spaces, na.rm = TRUE)) %>%
-  ggplot(aes(x = price_range, y = avg_garage_spaces, fill = price_range)) +
-  geom_col(color = "black") +
-  labs(
-    title = "Average Garage Spaces by Price Range",
-    x = "Price Range",
-    y = "Avg Garage Spaces"
-  ) +
-  theme_minimal()
-```
-
-```{r}
-train_clean %>%
-  ggplot(aes(x = log(garage_spaces + 1), y = estimated_price)) +
-  geom_boxplot(aes(group = cut_width(log(garage_spaces + 1), 0.5)), fill = "lightblue") +
-  scale_y_continuous(
-    labels = scales::label_dollar(),
-    breaks = scales::pretty_breaks(n = 6)
-  ) +
-  labs(
-    title = "Price by Log(Garage Spaces + 1)",
-    x = "Log(Garage Spaces + 1)",
-    y = "Estimated Price"
-  ) +
-  theme_minimal()
-
-```
-
-#### School Ratings by Price
-
-```{r}
-train %>%
-  filter(!is.na(avg_school_rating)) %>%
-  mutate(price_range = factor(price_range, levels = c(
-    "0-250000", "250000-350000", "350000-450000", "450000-650000", "650000+"
-  )),
-  price_range = recode(price_range,
-    "0-250000" = "0–250k",
-    "250000-350000" = "250–350k",
-    "350000-450000" = "350–450k",
-    "450000-650000" = "450–650k",
-    "650000+" = "650k+"
-  )) %>%
-  ggplot(aes(x = price_range, y = avg_school_rating, fill = price_range)) +
-  geom_boxplot() +
-  labs(
-    title = "School Rating by Price Range",
-    x = "Price Range",
-    y = "Average School Rating"
-  ) +
-  theme_minimal()
-```
-
-------------------------------------------------------------------------
-
-### Geographic Visualization
-
-```{r}
-train %>%
-  filter(!is.na(latitude), !is.na(longitude)) %>%
-  ggplot(aes(x = longitude, y = latitude, color = price_range)) +
-  geom_point(alpha = 0.5) +
-  labs(
-    title = "Geographic Distribution of Homes by Price Range",
-    x = "Longitude",
-    y = "Latitude",
-    color = "Price Range"
-  ) +
-  theme_minimal()
-```
-
-------------------------------------------------------------------------
-
-### Correlation Analysis
-
-```{r}
-train %>%
-  select(where(is.numeric)) %>%
-  cor(use = "complete.obs") %>%
-  reshape2::melt() %>%
-  ggplot(aes(Var1, Var2, fill = value)) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
-  theme_minimal() +
-  labs(title = "Correlation Matrix", fill = "Correlation") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```

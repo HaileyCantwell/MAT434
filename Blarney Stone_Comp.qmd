@@ -159,9 +159,6 @@ p2 <- train %>%
 p1 + p2
 ```
 
-
-
-
 ```{r}
 names(data) <- janitor::make_clean_names(names(data))
 names(comp) <- janitor::make_clean_names(names(comp))
@@ -175,6 +172,7 @@ unregister <- function() {
 }
 train_folds <- vfold_cv(train, v = 10)
 ```
+
 ```{r}
 dt_spec <- decision_tree() %>%
   set_engine("rpart") %>%
@@ -188,6 +186,7 @@ dt_wf <- workflow() %>%
   add_model(dt_spec) %>%
   add_recipe(dt_rec)
 ```
+
 ```{r}
 n_cores <- parallel::detectCores()
 cl <- parallel::makeCluster(n_cores - 1, type = "PSOCK")
@@ -204,6 +203,7 @@ unregister()
 dt_cv_results %>%
   collect_metrics()
 ```
+
 ```{r}
 dt_tune_spec <- decision_tree(min_n = tune(), tree_depth = tune()) %>%
   set_engine("rpart") %>%
@@ -216,6 +216,7 @@ dt_tune_wf <- workflow() %>%
   add_model(dt_tune_spec) %>%
   add_recipe(dt_tune_rec)
 ```
+
 ```{r}
 n_cores <- parallel::detectCores()
 cl <- parallel::makeCluster(n_cores - 1, type = "PSOCK")
@@ -235,10 +236,12 @@ unregister()
 dt_tune_cv_results %>%
   collect_metrics()
 ```
+
 ```{r}
 dt_tune_cv_results %>%
   show_best(n = 10)
 ```
+
 ```{r}
 dt_best_params <- dt_tune_cv_results %>%
   select_best(metric = "mn_log_loss")
@@ -247,6 +250,7 @@ dt_best_wf <- dt_tune_wf %>%
 dt_best_fit <- dt_best_wf %>%
   fit(train)
 ```
+
 ```{r}
 Chloe_Hailey_submission <- dt_best_fit %>%
   augment(comp) %>%
