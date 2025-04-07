@@ -5,6 +5,11 @@ author:
     email: a.gilbert1@snhu.edu
     affiliations: 
       - name: Southern New Hampshire University
+co-author: 
+ - name: Hailey Cantwell
+    email: hailey.cantwell@snhu.edu
+    affiliations: 
+      - name: Southern New Hampshire University
 format: html
 date: 9/15/2023
 date-modified: today
@@ -47,7 +52,7 @@ Like its namesake vessel, the *Spaceship Titanic* encountered tragedy when sever
 
 ## Executive Summary
 
-:::{.callout-note}
+::: callout-note
 Intentionally left blank, for now. This is the last section to be written.
 :::
 
@@ -161,7 +166,7 @@ train %>%
   theme_bw()
 ```
 
-The plot above shows a [near] 0-inflated distribution. That is, there is an inflated number of observations near 0, given the shape of the rest of the distribution. Ages are right-skewed, with a median passenger age of 27 years old. Next we’ll look at the distribution of room service charges.
+The plot above shows a \[near\] 0-inflated distribution. That is, there is an inflated number of observations near 0, given the shape of the rest of the distribution. Ages are right-skewed, with a median passenger age of 27 years old. Next we’ll look at the distribution of room service charges.
 
 ```{r}
 #| message: false
@@ -396,18 +401,18 @@ As a result of this exploratory analysis, we’ve identified several important i
 
 ## Model Construction and Assessment
 
-:::{.callout-important}
+::: callout-important
 ## Statistical Learning versus Machine Learning
 
-There are two competing objectives that we can have in model construction. 
+There are two competing objectives that we can have in model construction.
 
-+ **Statistical Learning:** We build models with the intent of discovering and interpreting associations between our available predictors and the response.
-  
-  + Fits models and then uses $p$-values to identify significant predictors, confidence intervals for coefficients, etc.
+-   **Statistical Learning:** We build models with the intent of discovering and interpreting associations between our available predictors and the response.
 
-+ **Machine Learning:** We build models with the intent of making predictions as accurately as possible. 
+    -   Fits models and then uses $p$-values to identify significant predictors, confidence intervals for coefficients, etc.
 
-  + Uses methods like *cross-validation* for hyperparameter tuning and performance estimation
+-   **Machine Learning:** We build models with the intent of making predictions as accurately as possible.
+
+    -   Uses methods like *cross-validation* for hyperparameter tuning and performance estimation
 
 You do not necessarily need to choose just one approach or the other. Perhaps the problems/challenges you’ve set out to solve would benefit from both descriptive and predictive models. In this case, just make clear to the reader when you are switching between objectives.
 :::
@@ -466,15 +471,16 @@ log_reg_fit %>%
 
 Notice that all of the predictors are statistically significant (at the 5% significance threshold). The following are associated with a *higher* likelihood of interdimensional transport:
 
-+ being *younger* (lower `age` due to negative coefficient)
-+ lower spending on `room_service`, the `spa`, and the `vr_deck`
-+ higher spending at the `food_court` and `shopping_mall`
-+ being from `Europa` or `Mars` (as opposed to `Earth`)
-+ taking advantage of `cryo_sleep`
-+ traveling to `55 Cancri e` (as opposed to `PSO J318.5-22` or `TRAPPIST-1e`
+-   being *younger* (lower `age` due to negative coefficient)
+-   lower spending on `room_service`, the `spa`, and the `vr_deck`
+-   higher spending at the `food_court` and `shopping_mall`
+-   being from `Europa` or `Mars` (as opposed to `Earth`)
+-   taking advantage of `cryo_sleep`
+-   traveling to `55 Cancri e` (as opposed to `PSO J318.5-22` or `TRAPPIST-1e`
 
-:::{.callout-tip}
+::: callout-tip
 ## On Feature (Predictor) Selection
+
 For this particular model, we'd want to think a bit harder about a few items. First, do we really expect that `destination` planet should affect the likelihood of a passenger being transported to another dimension? Everyone is on the same ship and they haven't arrived to their destination yet... By including the `destination` variable, we could be masking the effect of a truly influential predictor (that is, there could be a *confounding* effect here). We should have similar concerns about `home_planet` -- do we expect that *species* might have an impact on the likelihood that a passenger is lost? Perhaps, but we should come up with a rationalization for, or against, the use of this predictor. As one additional comment, the space travel agency/company could be interested only in factors that they can control via ticketing. In this case, they may want to focus on the `cryo_sleep` service, `cabin` sleeping/housing arrangements, `vip` packages and accompanying services, and spending at the various ship amenities (`room_service`, `food_court`, etc.).
 :::
 
@@ -590,11 +596,11 @@ mfx %>%
   theme_bw()
 ```
 
-We can see that additional spending at the `vr_deck` is associated with *lower* likelihood of interdimensional transport (the marginal effect is negative). The rate of reduction is greatest at around 600 to 700, but additional spending beyond 3500 seems to not be associated with any greater [meaningful] reduction in risk.
+We can see that additional spending at the `vr_deck` is associated with *lower* likelihood of interdimensional transport (the marginal effect is negative). The rate of reduction is greatest at around 600 to 700, but additional spending beyond 3500 seems to not be associated with any greater \[meaningful\] reduction in risk.
 
 ##### Advanced Models: Interaction
 
-:::{.callout-note}
+::: callout-note
 We did not cover this in class -- it is just here in case you are interested.
 :::
 
@@ -732,8 +738,9 @@ log_reg_cv_results %>%
 
 Notice that the average recall over the ten cross-validation folds was around 77.09%. This indicates that we should expect a model of this particular form (a logistic regressor with the predictors we utilized and the feature engineering steps in our recipe) to correctly capture about 77% of passengers who are truly at risk of interdimensional transport. This isn't bad for a first pass -- can we do better?
 
-:::{.callout-tip}
+::: callout-tip
 ## Results of Cross-Validation
+
 The result of running `fit_resamples()` is a collection of performance metrics. We do not have a *fitted model* that can be used to make predictions until we `fit()` our model to its training data.
 :::
 
@@ -834,6 +841,3 @@ log_reg_seq_tune_results %>%
 ## Conclusion
 
 ## References
-h
-
-
