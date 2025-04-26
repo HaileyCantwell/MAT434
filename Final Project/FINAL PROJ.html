@@ -119,11 +119,20 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> </span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(user_id)) <span class="sc">%&gt;%</span> </span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mental_health_status =</span> <span class="fu">factor</span>(mental_health_status,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Poor"</span>, <span class="st">"Good"</span>, <span class="st">"Fair"</span>, <span class="st">"Excellent"</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">ordered =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">stress_level =</span> <span class="fu">factor</span>(stress_level)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">stress_level =</span> <span class="fu">factor</span>(stress_level, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>), <span class="at">ordered =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">mental_health_status =</span> <span class="fu">factor</span>(mental_health_status, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Poor"</span>, <span class="st">"Fair"</span>, <span class="st">"Good"</span>, <span class="st">"Excellent"</span>), <span class="at">ordered =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_group =</span> <span class="fu">cut</span>(</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  age,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">18</span>, <span class="dv">29</span>, <span class="dv">39</span>, <span class="dv">49</span>, <span class="dv">59</span>, <span class="dv">65</span>),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"18–28"</span>, <span class="st">"29–38"</span>, <span class="st">"39–48"</span>, <span class="st">"49–58"</span>, <span class="st">"59–65"</span>),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">include.lowest =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">right =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
@@ -138,7 +147,14 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 </div>
 <section id="statement-of-purpose" class="level2">
 <h2 class="anchored" data-anchor-id="statement-of-purpose">Statement of Purpose</h2>
-<p>The purpose of this analysis is to explore how daily technology usage, including screen time and social media engagement, impact mental health indicators such as stress levels, sleep quality, and overall mental wellness. This dataset aims to provide insight that may guide researchers and assist is forming healthier technology habits to improve well-being.</p>
+<p>The purpose of this analysis is to explore how daily technology usage, including screen time and social media engagement, impact mental health indicators such as stress levels, sleep quality, and overall mental wellness. This data set aims to provide insight that may guide researchers and assist is forming healthier technology habits to improve overall well-being.</p>
+</section>
+<section id="executive-summary" class="level2">
+<h2 class="anchored" data-anchor-id="executive-summary">Executive Summary</h2>
+<p>This analysis looks to analyze the impact of technology usage, based on average hours of: technology, social media, gaming, and screen time usage on mental health status and stress levels using a data set found on <a href="https://www.kaggle.com/datasets/waqi786/mental-health-and-technology-usage-dataset/data">Kaggle.</a> Our exploratory data analysis uncovered higher stress levels among younger age groups, whilst older individuals generally report lower levels of stress.</p>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 </section>
 <section id="exploratory-data-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
@@ -163,6 +179,7 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 <th style="text-align: left;" data-quarto-table-cell-role="th">support_systems_access</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">work_environment_impact</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">online_support_usage</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">age_group</th>
 </tr>
 </thead>
 <tbody>
@@ -180,6 +197,7 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Negative</td>
 <td style="text-align: left;">Yes</td>
+<td style="text-align: left;">18–28</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">21</td>
@@ -195,6 +213,7 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 <td style="text-align: left;">Yes</td>
 <td style="text-align: left;">Positive</td>
 <td style="text-align: left;">No</td>
+<td style="text-align: left;">18–28</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">51</td>
@@ -210,6 +229,7 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Negative</td>
 <td style="text-align: left;">No</td>
+<td style="text-align: left;">49–58</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">25</td>
@@ -225,6 +245,7 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 <td style="text-align: left;">Yes</td>
 <td style="text-align: left;">Negative</td>
 <td style="text-align: left;">Yes</td>
+<td style="text-align: left;">18–28</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">53</td>
@@ -240,6 +261,7 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Positive</td>
 <td style="text-align: left;">Yes</td>
+<td style="text-align: left;">49–58</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">58</td>
@@ -255,6 +277,7 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 <td style="text-align: left;">Yes</td>
 <td style="text-align: left;">Neutral</td>
 <td style="text-align: left;">Yes</td>
+<td style="text-align: left;">49–58</td>
 </tr>
 </tbody>
 </table>
@@ -262,13 +285,15 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 
 </div>
 </div>
+<p>The following graph shows a distribution of mental health status responses across all participants being relatively even across each level, with ‘fair’ being slightly lower than the other groups. This suggests that mental health status tends to vary over the population.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> mental_health_status)) <span class="sc">+</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of mental health status"</span>,</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Mental health status"</span>,</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Count"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> mental_health_status, <span class="at">fill =</span> mental_health_status)) <span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of mental health status"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Mental health status"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Count"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -277,12 +302,81 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 </div>
 </div>
 </div>
+<p>The distribution of stress level ratings displays being relatively even across each category, with ‘low’ showing a slightly higher distribution. This suggests that stress is commonly felt among participants regardless of the severity.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(mental_health_status) <span class="sc">%&gt;%</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(mental_health_status) <span class="sc">%&gt;%</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> stress_level, <span class="at">fill =</span> stress_level)) <span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of stress levels"</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Stress Levels"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Count"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FINAL-PROJ_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The follow chart compares the ‘low’, ‘medium’, and ‘high’ stress levels among each age group, in which a fairly even distribution is found. The 59-65 age group was found to have the highest proportion of self-reported ‘low’ levels of stress. However, the 39-48 group was found to have the highest proportion of ‘high’ levels of stress. The higher levels of low stress into later years may show a potential trend for improved stress regulation with age.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(age_group, stress_level) <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age_group) <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age_group, <span class="at">y =</span> prop, <span class="at">fill =</span> stress_level)) <span class="sc">+</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.8</span>), <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Stress Levels by Age Group"</span>,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Age Group"</span>,</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Proportion"</span>,</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"Stress Level"</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FINAL-PROJ_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The following chart displays the proportions of mental health status by age group. Both the youngest and oldest groups displayed the highest levels of ‘poor’ and ‘fair’ mental health statuses. Which may indicate a vulnerability during early adulthood and potential age-related life challenges later in life. Whilst 39-48 display the highest levels of ‘good’ and ‘excellent’ rankings. There is a noticeable upward trend in the ‘good’ ranking between the age ranges from 18 to 48.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(age_group, mental_health_status) <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age_group) <span class="sc">%&gt;%</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age_group, <span class="at">y =</span> prop, <span class="at">fill =</span> mental_health_status)) <span class="sc">+</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.8</span>), <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Mental Health Status by Age Group"</span>,</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Age Group"</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Proportion"</span>,</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"Mental Health Status"</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FINAL-PROJ_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(mental_health_status) <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(mental_health_status) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-hover table-striped caption-top table-sm small" data-quarto-postprocess="true">
 <thead>
@@ -297,12 +391,12 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 <td style="text-align: right;">2135</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Good</td>
-<td style="text-align: right;">2136</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;">Fair</td>
 <td style="text-align: right;">2103</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Good</td>
+<td style="text-align: right;">2136</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Excellent</td>
@@ -313,11 +407,11 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 
 
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(stress_level) <span class="sc">%&gt;%</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(stress_level) <span class="sc">%&gt;%</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(stress_level) <span class="sc">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(stress_level) <span class="sc">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-hover table-striped caption-top table-sm small" data-quarto-postprocess="true">
 <thead>
@@ -328,16 +422,16 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">High</td>
-<td style="text-align: right;">2826</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">Low</td>
 <td style="text-align: right;">2860</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">Medium</td>
 <td style="text-align: right;">2813</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">2826</td>
 </tr>
 </tbody>
 </table>
@@ -346,11 +440,11 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">%&gt;%</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>, <span class="at">bootstrap_options =</span> <span class="st">"hover"</span>, <span class="st">"striped"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>, <span class="at">bootstrap_options =</span> <span class="st">"hover"</span>, <span class="st">"striped"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-hover caption-top table-sm table-striped small" data-quarto-postprocess="true">
 <thead>
@@ -433,17 +527,17 @@ dbl (7): Age, Technology_Usage_Hours, Social_Media_Usage_Hours, Gaming_Hours...
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>recipe_class <span class="ot">&lt;-</span> <span class="fu">recipe</span>(mental_health_status <span class="sc">~</span> ., <span class="at">data =</span> train) <span class="sc">%&gt;%</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_normalize</span>(<span class="fu">all_numeric_predictors</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>())</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>recipe_class <span class="sc">%&gt;%</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">prep</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">juice</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>recipe_class <span class="ot">&lt;-</span> <span class="fu">recipe</span>(mental_health_status <span class="sc">~</span> ., <span class="at">data =</span> train) <span class="sc">%&gt;%</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_normalize</span>(<span class="fu">all_numeric_predictors</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>()) </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>recipe_class <span class="sc">%&gt;%</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">prep</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">juice</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 8,499
-Columns: 16
+Columns: 20
 $ age                              &lt;dbl&gt; 0.8186867, 0.8186867, -0.5464477, -0.…
 $ technology_usage_hours           &lt;dbl&gt; -1.67244723, 0.31979656, 0.61342361, …
 $ social_media_usage_hours         &lt;dbl&gt; -1.4744686, -1.6258061, -1.2236807, -…
@@ -454,77 +548,92 @@ $ physical_activity_hours          &lt;dbl&gt; -0.34567294, 0.01622890, -1.70366
 $ mental_health_status             &lt;ord&gt; Good, Good, Fair, Poor, Poor, Good, P…
 $ gender_Male                      &lt;dbl&gt; 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1…
 $ gender_Other                     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0…
-$ stress_level_Low                 &lt;dbl&gt; 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1…
-$ stress_level_Medium              &lt;dbl&gt; 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0…
+$ stress_level_1                   &lt;dbl&gt; -7.071068e-01, -9.073800e-17, 7.07106…
+$ stress_level_2                   &lt;dbl&gt; 0.4082483, -0.8164966, 0.4082483, 0.4…
 $ support_systems_access_Yes       &lt;dbl&gt; 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1…
 $ work_environment_impact_Neutral  &lt;dbl&gt; 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0…
 $ work_environment_impact_Positive &lt;dbl&gt; 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1…
-$ online_support_usage_Yes         &lt;dbl&gt; 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1…</code></pre>
+$ online_support_usage_Yes         &lt;dbl&gt; 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1…
+$ age_group_X29.38                 &lt;dbl&gt; 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0…
+$ age_group_X39.48                 &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0…
+$ age_group_X49.58                 &lt;dbl&gt; 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1…
+$ age_group_X59.65                 &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>multinom_spec <span class="ot">&lt;-</span> <span class="fu">multinom_reg</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"nnet"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"classification"</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>multinom_workflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(recipe_class) <span class="sc">%&gt;%</span> </span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(multinom_spec)</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>multinom_fit <span class="ot">&lt;-</span> multinom_workflow <span class="sc">%&gt;%</span> </span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="at">data =</span> train)</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>multinom_val_probs <span class="ot">&lt;-</span> multinom_fit <span class="sc">%&gt;%</span> </span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(validation, <span class="at">type =</span> <span class="st">"prob"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(validation)</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>multinom_val_class <span class="ot">&lt;-</span> multinom_fit <span class="sc">%&gt;%</span> </span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(validation, <span class="at">type =</span> <span class="st">"class"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(validation)</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>multinom_accuracy <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(multinom_val_class, <span class="at">truth =</span> mental_health_status, <span class="at">estimate =</span> .pred_class)</span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>multinom_kap <span class="ot">&lt;-</span> <span class="fu">kap</span>(multinom_val_class, <span class="at">truth =</span> mental_health_status, <span class="at">estimate =</span> .pred_class)</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>multinom_log_loss <span class="ot">&lt;-</span> <span class="fu">mn_log_loss</span>(multinom_val_probs, <span class="at">truth =</span> mental_health_status, <span class="fu">starts_with</span>(<span class="st">".pred_"</span>))</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>multinom_metrics <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(multinom_accuracy, multinom_kap, multinom_log_loss)</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(multinom_metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>multinom_spec <span class="ot">&lt;-</span> <span class="fu">multinom_reg</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"nnet"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"classification"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>multinom_workflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(recipe_class) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(multinom_spec)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>multinom_fit <span class="ot">&lt;-</span> multinom_workflow <span class="sc">%&gt;%</span> </span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="at">data =</span> train)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>multinom_val_probs <span class="ot">&lt;-</span> multinom_fit <span class="sc">%&gt;%</span> </span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(validation, <span class="at">type =</span> <span class="st">"prob"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(validation)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>multinom_val_class <span class="ot">&lt;-</span> multinom_fit <span class="sc">%&gt;%</span> </span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(validation, <span class="at">type =</span> <span class="st">"class"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(validation)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>multinom_accuracy <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(multinom_val_class, <span class="at">truth =</span> mental_health_status, <span class="at">estimate =</span> .pred_class)</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>multinom_kap <span class="ot">&lt;-</span> <span class="fu">kap</span>(multinom_val_class, <span class="at">truth =</span> mental_health_status, <span class="at">estimate =</span> .pred_class)</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>multinom_log_loss <span class="ot">&lt;-</span> <span class="fu">mn_log_loss</span>(multinom_val_probs, <span class="at">truth =</span> mental_health_status, <span class="fu">starts_with</span>(<span class="st">".pred_"</span>))</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>multinom_metrics <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(multinom_accuracy, multinom_kap, multinom_log_loss)</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(multinom_metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 3
   .metric     .estimator .estimate
   &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt;
-1 accuracy    multiclass   0.252  
-2 kap         multiclass   0.00399
-3 mn_log_loss multiclass   1.39   </code></pre>
+1 accuracy    multiclass    0.231 
+2 kap         multiclass   -0.0234
+3 mn_log_loss multiclass    1.39  </code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>rf_spec <span class="ot">&lt;-</span> <span class="fu">rand_forest</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"ranger"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"classification"</span>)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>rf_workflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(recipe_class) <span class="sc">%&gt;%</span> </span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(rf_spec)</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>rf_fit <span class="ot">&lt;-</span> rf_workflow <span class="sc">%&gt;%</span> </span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="at">data =</span> train)</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>rf_val_class <span class="ot">&lt;-</span> rf_fit <span class="sc">%&gt;%</span> </span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(validation, <span class="at">type =</span> <span class="st">"class"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(validation)</span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>rf_accuracy <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(rf_val_class, <span class="at">truth =</span> mental_health_status, <span class="at">estimate =</span> .pred_class)</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>rf_kap <span class="ot">&lt;-</span> <span class="fu">kap</span>(rf_val_class, <span class="at">truth =</span> mental_health_status, <span class="at">estimate =</span> .pred_class)</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>rf_metrics <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(rf_accuracy, rf_kap)</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(rf_metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>rf_spec <span class="ot">&lt;-</span> <span class="fu">rand_forest</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"ranger"</span>, <span class="at">importance =</span> <span class="st">"impurity"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"classification"</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>rf_workflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(recipe_class) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(rf_spec)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>rf_fit <span class="ot">&lt;-</span> rf_workflow <span class="sc">%&gt;%</span> </span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="at">data =</span> train)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>rf_val_class <span class="ot">&lt;-</span> rf_fit <span class="sc">%&gt;%</span> </span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(validation, <span class="at">type =</span> <span class="st">"class"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(validation)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>rf_accuracy <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(rf_val_class, <span class="at">truth =</span> mental_health_status, <span class="at">estimate =</span> .pred_class)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>rf_kap <span class="ot">&lt;-</span> <span class="fu">kap</span>(rf_val_class, <span class="at">truth =</span> mental_health_status, <span class="at">estimate =</span> .pred_class)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>rf_metrics <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(rf_accuracy, rf_kap)</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(rf_metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 3
   .metric  .estimator .estimate
   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-1 accuracy multiclass   0.253  
-2 kap      multiclass   0.00421</code></pre>
+1 accuracy multiclass   0.249  
+2 kap      multiclass  -0.00125</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>rf_final_model <span class="ot">&lt;-</span> <span class="fu">extract_fit_parsnip</span>(rf_fit)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">vip</span>(rf_final_model<span class="sc">$</span>fit) <span class="sc">+</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Variable Importance: Random Forest Model"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FINAL-PROJ_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
