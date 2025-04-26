@@ -166,14 +166,14 @@ Prior to training any models I enhanced the predictors by creating a composite m
 recipe_class <- recipe(mental_health_status ~ ., data = train) %>%
   step_mutate(
     sm_to_screen     = social_media_usage_hours / screen_time_hours,
-    screen_to_sleep  = screen_time_hours    / sleep_hours,
-    gaming_to_screen = gaming_hours         / screen_time_hours,
+    screen_to_sleep  = screen_time_hours / sleep_hours,
+    gaming_to_screen = gaming_hours / screen_time_hours,
     sm_x_age         = social_media_usage_hours * age
   ) %>%
   step_impute_median(all_numeric_predictors()) %>%
   step_nzv(all_predictors()) %>%
   step_normalize(all_numeric_predictors()) %>%
-  step_poly(age, degree = 2) %>%
+  step_poly(age, degree=2) %>%
   step_dummy(all_nominal_predictors())
 
 ```
@@ -181,13 +181,38 @@ recipe_class <- recipe(mental_health_status ~ ., data = train) %>%
 I continued to create a random forest model by utilizing the ranger function.
 
 ```{r}
-rf_spec_tune <- rand_forest(mtry = tune(), trees = tune(), min_n = tune()) %>%
-  set_engine("ranger", importance = "impurity") %>%
+rf_spec_tune <- rand_forest(mtry=tune(), trees=tune(), min_n=tune()) %>%
+  set_engine("ranger", importance="impurity") %>%
   set_mode("classification")
 
 rf_wf_tune <- workflow() %>%
   add_recipe(recipe_class) %>%
   add_model(rf_spec_tune)
+
+rf_params <- extract_parameter_set_dials(rf_spec_tune) %>%
+  update(mtry= mtry(range=c(2,10)),
+         trees= trees(range=c(100,1000)),
+         min_n= min_n(range=c(2,20)))
+rf_grid <- grid_random(rf_params, size=20)
+
+set.seed(123)
+rf_tune_res <- tune_grid(
+  rf_wf_tune,
+  resamples = cv_splits,
+  grid      = rf_grid,
+  metrics   = metric_set(accuracy, kap, mn_log_loss),
+  control   = control_grid(verbose=TRUE)
+)
+
+rf_tune_res %>% collect_metrics()
+autoplot(rf_tune_res)+ labs(title="RF Tuning Results")
+
+```
+
+```{r}
+best_rf_params <- rf_tune_res %>% select_best(metric="accuracy")
+rf_final_wf    <- rf_wf_tune %>% finalize_workflow(best_rf_params)
+rf_final_fit   <- fit(rf_final_wf, data=train)
 
 ```
 
@@ -215,8 +240,22 @@ rf_tune_res <- tune_grid(
   control   = control_grid(verbose = TRUE)
 )
 
-rf_tune_res %>% collect_metrics()
+rf_tune_res %>% 
+  collect_metrics()
 autoplot(rf_tune_res) + labs(title = "RF Tuning Results")
+
+```
+
+```{r}
+
+# 1. Extract the best RF hyperparameters by accuracy
+best_rf_params <- rf_tune_res %>% select_best(metric = "accuracy")
+
+# 2. Plug them into the workflow
+rf_final_wf  <- rf_wf_tune %>% finalize_workflow(best_rf_params)
+
+# 3. Fit on all training data
+rf_final_fit <- fit(rf_final_wf, data = train)
 
 ```
 
@@ -225,32 +264,19 @@ autoplot(rf_tune_res) + labs(title = "RF Tuning Results")
 To finalize the workflow I chose the best hyper-parameters, fit the full training set, and evaluated on the test set.
 
 ```{r}
+rf_test_preds <- rf_final_fit %>%
+  predict(new_data=test, type="prob") %>%
+  bind_cols(predict(rf_final_fit, test, type="class")) %>%
+  bind_cols(test)
 
-# 1. (Re)fit your final workflow on the full training data
-rf_final_wf <- finalize_workflow(rf_wf_tune, best_rf_params)
-rf_final_fit <- fit(rf_final_wf, data = train)
-
-# 2. Quick sanity check: make sure 'test' has the original raw columns
-print("Test set columns:")
-print(colnames(test))
-
-# 3. Get predictions — the workflow will apply recipe_class (with all composites, dummies, etc.) under the hood
-rf_test_probs <- predict(rf_final_fit, new_data = test, type = "prob")
-rf_test_class <- predict(rf_final_fit, new_data = test, type = "class")
-
-# 4. Combine predictions with the true outcomes
-rf_test_preds <- bind_cols(rf_test_probs, rf_test_class, test)
-
-# 5. Compute your metrics
 rf_test_metrics <- rf_test_preds %>%
-  metrics(truth = mental_health_status, estimate = .pred_class)
+  metrics(truth=mental_health_status, estimate=.pred_class)
 print(rf_test_metrics)
 
-# 6. (Optional) Confusion matrix heatmap
 rf_test_preds %>%
-  conf_mat(truth = mental_health_status, estimate = .pred_class) %>%
-  autoplot(type = "heatmap") +
-  labs(title = "RF Confusion Matrix on Test Set")
+  conf_mat(truth=mental_health_status, estimate=.pred_class) %>%
+  autoplot(type="heatmap") +
+  labs(title="RF Confusion Matrix")
 
 ```
 
@@ -259,86 +285,63 @@ rf_test_preds %>%
 I continued to fitting the ordinal logisitc regression model by utilizing the same recipe without the use of the hyperparameter tuning. This was done to compare models and ensure the highest level of accuracy.
 
 ```{r}
+ord_probs <- predict(polr_fit, newdata=test_baked, type="prob")
+ord_class <- predict(polr_fit, newdata=test_baked, type="class")
 
-# 1. Prep & bake both train and test through the same recipe
-rec_prep    <- recipe_class %>% prep()
-train_baked <- bake(rec_prep, new_data = train)
-test_baked  <- bake(rec_prep, new_data = test)
+ord_preds <- bind_cols(ord_probs, .pred_class=ord_class, test_baked)
+ord_metrics <- ord_preds %>%
+  metrics(truth=mental_health_status, estimate=.pred_class)
+print(ord_metrics)
 
-# 2. Fit an ordinal logit with polr()
-polr_fit <- polr(
-  mental_health_status ~ .,
-  data = train_baked,
-  Hess = TRUE
-)
-
-# 3. Predict on the test set
-polr_class <- predict(polr_fit, newdata = test_baked, type = "class")
-
-# 4. Build a tibble of truth vs. predictions
-polr_preds <- tibble(
-  truth       = test_baked$mental_health_status,
-  .pred_class = polr_class
-)
-
-# 5. Compute metrics
-polr_metrics <- polr_preds %>%
-  metrics(truth = truth, estimate = .pred_class)
-print(polr_metrics)
-
-# 6. Confusion matrix heatmap
-polr_preds %>%
-  conf_mat(truth = truth, estimate = .pred_class) %>%
-  autoplot(type = "heatmap") +
-  labs(title = "Ordinal Logit (polr) Confusion Matrix")
+ord_preds %>%
+  conf_mat(truth=mental_health_status, estimate=.pred_class) %>%
+  autoplot(type="heatmap") +
+  labs(title="Ordinal Logit Confusion Matrix")
 
 ```
 
 The third model I generated was the XGBoost model, tuned over the same CV split, then plotted the tuning results to compare to the prior to models.
 
 ```{r}
-## Gradient‐Boosted Tree Tuning
-
-# 1. Define a boost_tree spec with tunable hyperparameters
-boost_spec <- boost_tree(
-  trees      = tune(),        # number of trees
-  tree_depth = tune(),        # max depth
-  learn_rate = tune()         # learning rate
-) %>%
-  set_engine("xgboost") %>%
-  set_mode("classification")
-
-# 2. Create a workflow re‐using your recipe
-boost_wf <- workflow() %>%
-  add_recipe(recipe_class) %>%
-  add_model(boost_spec)
-
-# 3. Build a random tuning grid
-boost_params <- extract_parameter_set_dials(boost_spec) %>%
-  update(
-    trees      = trees(range = c(100, 1000)),
-    tree_depth = tree_depth(range = c(3, 10)),
-    learn_rate = learn_rate(range = c(0.01, 0.3))
-  )
-boost_grid <- grid_random(boost_params, size = 20)
-
-# 4. Tune with your existing CV splits
-set.seed(456)
-boost_res <- tune_grid(
-  boost_wf,
-  resamples = cv_splits,
-  grid      = boost_grid,
-  metrics   = metric_set(accuracy, kap),
-  control   = control_grid(verbose = TRUE)
+xgb_test_preds <- bind_cols(
+  predict(boost_final_fit, new_data=test, type="prob"),
+  .pred_class = predict(boost_final_fit, new_data=test, type="class"),
+  test
 )
 
-# 5. View results
-boost_res %>% collect_metrics() %>% filter(.metric == "accuracy")
-autoplot(boost_res) + labs(title = "Boosted Tree Tuning")
+xgb_test_metrics <- xgb_test_preds %>%
+  metrics(truth=mental_health_status, estimate=.pred_class)
+print(xgb_test_metrics)
+
+xgb_test_preds %>%
+  conf_mat(truth=mental_health_status, estimate=.pred_class) %>%
+  autoplot(type="heatmap") +
+  labs(title="XGBoost Confusion Matrix")
 
 ```
 
+```{r}
+best_boost_params <- boost_res %>% select_best(metric="accuracy")
+boost_final_wf    <- boost_wf %>% finalize_workflow(best_boost_params)
+boost_final_fit   <- fit(boost_final_wf, data=train)
+
+```
 I pulled the best hyperparameters, finalized the data, fit to the training set, and evaluated on the test set.
+
+```{r}
+
+# 1. Pull out the best RF hyperparameters by accuracy
+best_rf_params <- rf_tune_res %>% select_best(metric = "accuracy")
+
+# 2. Finalize the RF workflow with those params
+rf_final_wf <- rf_wf_tune %>%
+  finalize_workflow(best_rf_params)
+
+# 3. Fit the finalized workflow on ALL of your training data
+rf_final_fit <- rf_final_wf %>%
+  fit(data = train)
+
+```
 
 ```{r}
 # 1. Pull out the best hyperparameters by accuracy
@@ -481,12 +484,12 @@ results_tbl %>%
 
 ```
 
-# Conclusion 
+# Conclusion
 
-The random forest predictive model achieved the highest accuracy at \~27%, which was then followed by the other two models around \~24% accuracy. This displays an incredibly modest predictive model, which indicates that technology usage only only captures a sliver of mental health variances. Notably, screen time and social media usage were found to be the most influential predictors, whilst sleep and physical activity contributed much less.
+The random forest predictive model achieved the highest accuracy at ~27%, which was then followed by the other two models around \~24% accuracy. This displays an incredibly modest predictive model, which indicates that technology usage only only captures a sliver of mental health variances. Notably, screen time and social media usage were found to be the most influential predictors, whilst sleep and physical activity contributed much less.
 
 For future work, having larger, more broad samples of data would be beneficial to create a more accurate mode. As well as integrating various psychosocial metrics to measure mood and social supports instead of self-report response, may assist in providing deeper insights overall.
 
-# References 
+# References
 
-waqi786. (2024). *Mental Health & Technology Usage Dataset* \[Data set\]. Kaggle. <https://www.kaggle.com/datasets/waqi786/mental-health-and-technology-usage-dataset/data>
+> waqi786. (2024). Mental Health & Technology Usage Dataset \[Data set\]. Kaggle. https://www.kaggle.com/datasets/waqi786/mental-health-and-technology-usage-dataset/data
