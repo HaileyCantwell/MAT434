@@ -1,0 +1,275 @@
+---
+title: "Data"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(kableExtra)
+library(patchwork)
+library(ggridges)
+library(marginaleffects)
+library(tidytext)
+library(vip)
+library(ordinal)
+options(kable_styling_bootstrap_options = c("hover", "striped"))
+theme_set(theme_bw(base_size = 14))
+```
+
+```{r}
+data <- read_csv("mental_health_and_technology_usage_2024.csv") %>% 
+  janitor::clean_names()
+
+data <- data %>% 
+  select(-user_id) %>% 
+  mutate(
+    stress_level = factor(stress_level, levels = c("Low","Medium","High"), ordered = TRUE),
+    mental_health_status = factor(mental_health_status, levels = c("Poor","Fair","Good","Excellent"), ordered = TRUE)
+  )
+
+```
+
+```{r}
+set.seed(123)
+data_splits <- initial_split(data, prop = 0.85, strata = social_media_usage_hours)
+train      <- training(data_splits)
+temp       <- testing(data_splits)
+
+set.seed(456)
+test_splits <- initial_split(temp, prop = 0.6)
+validation  <- training(test_splits)
+test        <- testing(test_splits)
+
+# Create 5‐fold CV splits stratified on the outcome
+set.seed(123)
+cv_splits <- vfold_cv(train, v = 5, strata = mental_health_status)
+
+```
+
+
+
+## Statement of Purpose
+
+The purpose of this analysis is to explore how daily technology usage, including screen time and social media engagement, impact mental health indicators such as stress levels, sleep quality, and overall mental wellness. This data set aims to provide insight that may guide researchers and assist is forming healthier technology habits to improve overall well-being.
+
+## Executive Summary
+
+This analysis looks to analyze the impact of technology usage, based on average hours of: technology, social media, gaming, and screen time usage on mental health status and stress levels using a data set found on [Kaggle.](https://www.kaggle.com/datasets/waqi786/mental-health-and-technology-usage-dataset/data) Our exploratory data analysis uncovered higher stress levels among younger age groups, whilst older individuals generally report lower levels of stress.
+
+## Introduction
+
+## Exploratory Data Analysis
+
+
+
+```{r}
+head(data) %>%
+  kable() %>%
+  kable_styling()
+```
+
+
+
+The following graph shows a distribution of mental health status responses across all participants being relatively even across each level, with 'fair' being slightly lower than the other groups. This suggests that mental health status tends to vary over the population.The distribution of stress level ratings displays being relatively even across each category, with 'low' showing a slightly higher distribution. This suggests that stress is commonly felt among participants regardless of the severity.
+
+
+
+```{r}
+train %>%
+  ggplot(aes(mental_health_status, fill = mental_health_status)) +
+  geom_bar() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "Distribution of Mental Health Status", x = NULL, y = "Count")
+
+train %>%
+  ggplot(aes(stress_level, fill = stress_level)) +
+  geom_bar() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "Distribution of Stress Levels", x = NULL, y = "Count")
+
+```
+
+
+
+To better understand the distrubutions we will plot participants stress level responses. 
+
+
+
+```{r}
+train %>%
+  ggplot(aes(age, as.numeric(stress_level), color = stress_level)) +
+  geom_jitter(width = 0.5, height = 0.1, alpha = 0.6) +
+  geom_smooth(aes(group = 1), method = "loess", se = TRUE, color = "gray30") +
+  scale_color_brewer(palette = "Set2") +
+  scale_y_continuous(breaks = 1:3, labels = c("Low","Medium","High")) +
+  labs(title = "Stress Level by Age", x = "Age", y = "Stress Level", color = NULL) +
+  theme_minimal()
+
+```
+
+```{r}
+train %>%
+  ggplot(aes(age, as.numeric(mental_health_status), color = mental_health_status)) +
+  geom_jitter(width = 0.5, height = 0.1, alpha = 0.6) +
+  geom_smooth(aes(group = 1), method = "loess", se = TRUE, color = "gray30") +
+  scale_color_brewer(palette = "Set2") +
+  scale_y_continuous(breaks = 1:4, labels = c("Poor","Fair","Good","Excellent")) +
+  labs(title = "Mental Health Status by Age", x = "Age", y = NULL, color = NULL) +
+  theme_minimal()
+
+```
+
+```{r}
+train %>%
+  ggplot(aes(social_media_usage_hours, mental_health_status, fill = mental_health_status)) +
+  geom_density_ridges(alpha = 0.8, scale = 1.1, bandwidth = 0.5) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "Social Media Usage by MH Status", x = "Hours/day", y = NULL, fill = NULL) +
+  theme_ridges(grid = TRUE)
+
+
+```
+
+```{r}
+num_cols <- train %>% select(where(is.numeric))
+corr_mat <- cor(num_cols, use = "pairwise.complete.obs")
+
+reshape2::melt(corr_mat) %>%
+  ggplot(aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low="navy", mid="white", high="firebrick", midpoint=0, limits=c(-1,1)) +
+  labs(title="Correlation Matrix of Numeric Features") +
+  theme(axis.text.x = element_text(angle=45, hjust=1), axis.text.y = element_text(angle=0))
+
+```
+
+
+## Feature Engineering and Preprocessing 
+
+
+
+```{r}
+recipe_class <- recipe(mental_health_status ~ ., data = train) %>%
+  step_mutate(
+    sm_to_screen     = social_media_usage_hours / screen_time_hours,
+    screen_to_sleep  = screen_time_hours    / sleep_hours,
+    gaming_to_screen = gaming_hours         / screen_time_hours,
+    sm_x_age         = social_media_usage_hours * age
+  ) %>%
+  step_impute_median(all_numeric_predictors()) %>%
+  step_nzv(all_predictors()) %>%
+  step_normalize(all_numeric_predictors()) %>%
+  step_poly(age, degree = 2) %>%
+  step_dummy(all_nominal_predictors())
+
+```
+
+```{r}
+rf_spec_tune <- rand_forest(mtry = tune(), trees = tune(), min_n = tune()) %>%
+  set_engine("ranger", importance = "impurity") %>%
+  set_mode("classification")
+
+rf_wf_tune <- workflow() %>%
+  add_recipe(recipe_class) %>%
+  add_model(rf_spec_tune)
+
+```
+
+
+
+## Model Resampling & Hyperparameter Tuning
+
+
+```{r}
+# parameter grid
+rf_params <- hardhat::extract_parameter_set_dials(rf_spec_tune) %>%
+  update(
+    mtry  = mtry(range = c(2,10)),
+    trees = trees(range = c(100,1000)),
+    min_n = min_n(range = c(2,20))
+  )
+rf_grid <- grid_random(rf_params, size = 20)
+
+# tuning
+set.seed(123)
+rf_tune_res <- tune_grid(
+  rf_wf_tune,
+  resamples = cv_splits,
+  grid      = rf_grid,
+  metrics   = metric_set(accuracy, kap, mn_log_loss),
+  control   = control_grid(verbose = TRUE)
+)
+
+rf_tune_res %>% collect_metrics()
+autoplot(rf_tune_res) + labs(title = "RF Tuning Results")
+
+```
+
+```{r}
+
+# 1. (Re)fit your final workflow on the full training data
+rf_final_wf <- finalize_workflow(rf_wf_tune, best_rf_params)
+rf_final_fit <- fit(rf_final_wf, data = train)
+
+# 2. Quick sanity check: make sure 'test' has the original raw columns
+print("Test set columns:")
+print(colnames(test))
+
+# 3. Get predictions — the workflow will apply recipe_class (with all composites, dummies, etc.) under the hood
+rf_test_probs <- predict(rf_final_fit, new_data = test, type = "prob")
+rf_test_class <- predict(rf_final_fit, new_data = test, type = "class")
+
+# 4. Combine predictions with the true outcomes
+rf_test_preds <- bind_cols(rf_test_probs, rf_test_class, test)
+
+# 5. Compute your metrics
+rf_test_metrics <- rf_test_preds %>%
+  metrics(truth = mental_health_status, estimate = .pred_class)
+print(rf_test_metrics)
+
+# 6. (Optional) Confusion matrix heatmap
+rf_test_preds %>%
+  conf_mat(truth = mental_health_status, estimate = .pred_class) %>%
+  autoplot(type = "heatmap") +
+  labs(title = "RF Confusion Matrix on Test Set")
+
+```
+
+
+## Ordinal Logistic Regression 
+
+
+
+```{r}
+## 1) Specify and fit an ordinal model
+ord_spec <- ordinal_reg() %>% 
+  set_engine("clm") %>% 
+  set_mode("classification")
+
+ord_wf <- workflow() %>%
+  add_recipe(recipe_class) %>%
+  add_model(ord_spec)
+
+ord_fit <- fit(ord_wf, data = train)
+
+## 2) Predict & evaluate on test
+ord_probs <- predict(ord_fit, new_data = test, type = "prob")
+ord_class <- predict(ord_fit, new_data = test, type = "class")
+
+ord_preds <- bind_cols(ord_probs, ord_class, test)
+
+ord_metrics <- ord_preds %>%
+  metrics(truth = mental_health_status, estimate = .pred_class)
+
+print(ord_metrics)
+
+## 3) Confusion matrix heatmap
+ord_preds %>%
+  conf_mat(truth = mental_health_status, estimate = .pred_class) %>%
+  autoplot(type = "heatmap") +
+  labs(title = "Ordinal Regression Confusion Matrix")
+
+```
+
