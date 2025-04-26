@@ -7,6 +7,8 @@ editor: visual
 ---
 
 ```{r}
+#| message: false
+#| warning: false
 library(tidyverse)
 library(tidymodels)
 library(kableExtra)
@@ -18,10 +20,16 @@ library(vip)
 library(ordinal)
 library(MASS)
 library(pdp)
+library(yardstick)
+library(doParallel)
 
 options(kable_styling_bootstrap_options = c("hover", "striped"))
 theme_set(theme_bw(base_size = 14))
 ```
+
+### Loading and Cleaning Data
+
+Within this section I began by reading in the CSV file, removed the user-id field as it was not necessary, then converted stress level and mental health status into ordered factors to assist the future models in understanding the ordinal manner.
 
 ```{r}
 data <- read_csv("mental_health_and_technology_usage_2024.csv") %>% 
@@ -37,6 +45,10 @@ data <- read_csv("mental_health_and_technology_usage_2024.csv") %>%
 
 ```
 
+### Data Splitting
+
+Within this section I split the data into temporary and training sets, then continued by splitting the temporary set into validation and test sets respectively. To finish the split, I conducted a 5-fold CV split on the training set to ensure that each class is balanced.
+
 ```{r}
 set.seed(123)
 data_splits <- initial_split(data, prop = 0.85, strata = social_media_usage_hours)
@@ -48,7 +60,6 @@ test_splits <- initial_split(temp, prop = 0.6)
 validation  <- training(test_splits)
 test        <- testing(test_splits)
 
-# Create 5‐fold CV splits stratified on the outcome
 set.seed(123)
 cv_splits <- vfold_cv(train, v = 5, strata = mental_health_status)
 
@@ -60,9 +71,9 @@ The purpose of this analysis is to explore how daily technology usage, including
 
 # Executive Summary
 
-The goal of this analysis was to assess whether variables of technology use, most notabley screen time and social media use, can reliably predict self-reported mental health status of individuals. In which I found a data set from [Kaggle](https://www.kaggle.com/datasets/waqi786/mental-health-and-technology-usage-dataset/data) to utilize. In which, I worked with the raw training data with the variables such as the ratio of social media to screen time, prior to training and tuning three different classifications models: random forest, ordinal logistic, and XGBoost under a 5-fold cross-validation frame.
+The goal of this analysis was to assess whether variables of technology use, most notabley screen time and social media use, can reliably predict self-reported mental health status of individuals. In which I found a data set from [Kaggle](https://www.kaggle.com/datasets/waqi786/mental-health-and-technology-usage-dataset/data) to utilize. In which, I worked with the raw training data with the variables such as the ratio of social media to screen time, prior to training and tuning two different classifications models: random forest and ordinal logistic.
 
-Within this test set, the random forest displayed the highest accuracy at 27%, which only narrowly surpassed the other two models which reached \~24% accuracy. The predictive power of this set is rather modest, yet it is shown that screen time and social media engagement are the strongest predictors of mental health outcomes.
+Within this test set, the random forest displayed the highest accuracy at 27%, which only narrowly surpassed the other ordinal model which reached 24% accuracy. The predictive power of this set is rather modest, yet it is shown that screen time and social media engagement are the strongest predictors of mental health outcomes.
 
 The following findings display that whilst technology usage patterns show some predictive powers, they only account for a sliver of the variance of mental health status responses. Further analyses of more broad datasets may provide varying results or incorporate additional psychological, social, or behavioral factors, whilst also exploring the varying outcomes of social media usage to better improve future predictions.
 
@@ -76,13 +87,15 @@ Technology has become increasingly more accessible over the past fifteen years. 
 
 Within this section, I will be utilizing the training set to further explore the potential relationships that exist between our predictors. In which the goal is to better understand which variables may influence mental health and further motivate future directions.
 
+### Raw Data Glipse
 To begin I inspected the first few rows of the raw data to ensure variable names and the structure of the data. I did utilize janitor to make the labels easier to consume.
-
 ```{r}
 head(data) %>%
   kable() %>%
   kable_styling()
 ```
+
+### Class Balance
 
 Next I continued by examining the distribution of mental health status and stress levels to understand if any imbalances exist that may impact modeling.
 
@@ -101,7 +114,9 @@ train %>%
 
 ```
 
-We continue by exploring the age-based trends that may exist in stress levels and mental health status, in which it is seen that each level had an appropriate representation of each age.
+### Age vs Stress & MH 
+
+I continued by exploring the age-based trends that may exist in stress levels and mental health status, in which it is seen that each level had an appropriate representation of each age. 
 
 ```{r}
 train %>%
@@ -127,7 +142,9 @@ train %>%
 
 ```
 
-I utilized a ridgeline density to see how social media usage may differ in regard to mental health status. There allows for us to see the distribution across each level of mental health status.
+### Social Media Usage by MH Status 
+
+I utilized a ridgeline density to see how social media usage may differ in regard to mental health status. There allows for me to see the distribution across each level of mental health status.
 
 ```{r}
 train %>%
@@ -139,6 +156,8 @@ train %>%
 
 
 ```
+
+### Numeric Feature Correlations
 
 In the final piece of this data analysis I computed and visualized correlations among all of the numerical predictors. This heatmap will assist in better understanding the patterns that exist between variables.
 
@@ -156,12 +175,10 @@ train %>%
 
 # Model Construction
 
-In this section, I depict how I transformed the variables and built three predictive models: random forest, ordinal logistic regression, and XGBoost. In which I used 5-fold cross-validation and hyperparameterer tuning. Each model was then finalized on the training set and evaluated based on the performance on the test data.
+In this section, I depict how I transformed the variables and built three predictive models: random forest and ordinal logistic regression. In which I used 5-fold cross-validation and hyperparameterer tuning. Each model was then finalized on the training set and evaluated based on the performance on the test data.
 
-## Feature Engineering and Pre-processing
-
-Prior to training any models I enhanced the predictors by creating a composite metric, normalized the data, and dummy-encoded categorical variables. I also created different composite metrics as well to look deeper at the patterns that may exist.
-
+### Recipe Definition
+I created composite ratios, imputed any missing values, normalized the numeric values, and use step_dummy on the categorical values. 
 ```{r}
 recipe_class <- recipe(mental_health_status ~ ., data = train) %>%
   step_mutate(
@@ -178,7 +195,16 @@ recipe_class <- recipe(mental_health_status ~ ., data = train) %>%
 
 ```
 
-I continued to create a random forest model by utilizing the ranger function.
+### Random Forest with Parallel Tuning
+
+I continued to create a random forest model by utilizing the ranger function and utilized parallel tuning to speed up the processing time.
+
+```{r}
+
+cl <- makeCluster(detectCores() - 1)
+registerDoParallel(cl)
+
+```
 
 ```{r}
 rf_spec_tune <- rand_forest(mtry=tune(), trees=tune(), min_n=tune()) %>%
@@ -216,35 +242,9 @@ rf_final_fit   <- fit(rf_final_wf, data=train)
 
 ```
 
-## Model Re-sampling & Hyper-parameter Tuning
+### Model Re-sampling & Hyper-parameter Tuning
 
-I generated a random tuning grid of 20, which preformed 5-fold CV to optimize accuracy of predictions.
-
-```{r}
-# parameter grid
-rf_params <- hardhat::extract_parameter_set_dials(rf_spec_tune) %>%
-  update(
-    mtry  = mtry(range = c(2,10)),
-    trees = trees(range = c(100,1000)),
-    min_n = min_n(range = c(2,20))
-  )
-rf_grid <- grid_random(rf_params, size = 20)
-
-# tuning
-set.seed(123)
-rf_tune_res <- tune_grid(
-  rf_wf_tune,
-  resamples = cv_splits,
-  grid      = rf_grid,
-  metrics   = metric_set(accuracy, kap, mn_log_loss),
-  control   = control_grid(verbose = TRUE)
-)
-
-rf_tune_res %>% 
-  collect_metrics()
-autoplot(rf_tune_res) + labs(title = "RF Tuning Results")
-
-```
+I generated a random tuning grid of 20, which preformed 5-fold CV to optimize accuracy, kappa, and logloss of predictions.
 
 ```{r}
 
@@ -261,8 +261,7 @@ rf_final_fit <- fit(rf_final_wf, data = train)
 
 # Model Interpretation and Interence
 
-To finalize the workflow I chose the best hyper-parameters, fit the full training set, and evaluated on the test set.
-
+To finalize the workflow I fit my RF to my training data, predicted on the test sets, computed the metrics, and plotted a confusion matrix. 
 ```{r}
 rf_test_preds <- rf_final_fit %>%
   predict(new_data=test, type="prob") %>%
@@ -279,100 +278,78 @@ rf_test_preds %>%
   labs(title="RF Confusion Matrix")
 
 ```
+### Multiclass log‐loss for RF
+I computed the RFs multiclass logloss on the test set to assess the quality of the predicitve model estimates. 
+```{r}
+rf_ll <- rf_test_preds %>% 
+  mn_log_loss(
+    truth       = mental_health_status,
+    .pred_Poor, .pred_Fair, .pred_Good, .pred_Excellent
+  )
+
+rf_ll
+
+```
 
 ## Ordinal Logistic Regression
 
-I continued to fitting the ordinal logisitc regression model by utilizing the same recipe without the use of the hyperparameter tuning. This was done to compare models and ensure the highest level of accuracy.
+Here I fit an ordinal logistic model on the same baked data and followed by evaluating its class predicitions. 
 
 ```{r}
-ord_probs <- predict(polr_fit, newdata=test_baked, type="prob")
-ord_class <- predict(polr_fit, newdata=test_baked, type="class")
 
-ord_preds <- bind_cols(ord_probs, .pred_class=ord_class, test_baked)
-ord_metrics <- ord_preds %>%
-  metrics(truth=mental_health_status, estimate=.pred_class)
-print(ord_metrics)
+rec_prep    <- recipe_class %>% 
+  prep()
+train_baked <- bake(rec_prep, new_data = train)
+test_baked  <- bake(rec_prep, new_data = test)
 
-ord_preds %>%
-  conf_mat(truth=mental_health_status, estimate=.pred_class) %>%
-  autoplot(type="heatmap") +
-  labs(title="Ordinal Logit Confusion Matrix")
 
-```
-
-The third model I generated was the XGBoost model, tuned over the same CV split, then plotted the tuning results to compare to the prior to models.
-
-```{r}
-xgb_test_preds <- bind_cols(
-  predict(boost_final_fit, new_data=test, type="prob"),
-  .pred_class = predict(boost_final_fit, new_data=test, type="class"),
-  test
+polr_fit <- polr(
+  mental_health_status ~ .,
+  data = train_baked,
+  Hess = TRUE
 )
 
-xgb_test_metrics <- xgb_test_preds %>%
-  metrics(truth=mental_health_status, estimate=.pred_class)
-print(xgb_test_metrics)
-
-xgb_test_preds %>%
-  conf_mat(truth=mental_health_status, estimate=.pred_class) %>%
-  autoplot(type="heatmap") +
-  labs(title="XGBoost Confusion Matrix")
-
+polr_class <- predict(polr_fit, newdata = test_baked, type = "class")
+polr_preds <- tibble(
+  truth       = test_baked$mental_health_status,
+  .pred_class = polr_class
+)
+polr_metrics <- polr_preds %>%
+  metrics(truth = truth, estimate = .pred_class)
+print(polr_metrics)
 ```
-
-```{r}
-best_boost_params <- boost_res %>% select_best(metric="accuracy")
-boost_final_wf    <- boost_wf %>% finalize_workflow(best_boost_params)
-boost_final_fit   <- fit(boost_final_wf, data=train)
-
-```
-I pulled the best hyperparameters, finalized the data, fit to the training set, and evaluated on the test set.
-
+### Multiclass log-loss for Ordinal Model 
+I extracted the ordinal model I created class probabilities on the test set and processed to compute to recieve the multiclass log-loss. 
 ```{r}
 
-# 1. Pull out the best RF hyperparameters by accuracy
-best_rf_params <- rf_tune_res %>% select_best(metric = "accuracy")
 
-# 2. Finalize the RF workflow with those params
-rf_final_wf <- rf_wf_tune %>%
-  finalize_workflow(best_rf_params)
+ord_probs <- predict(
+  polr_fit,
+  newdata = test_baked,    
+  type    = "probs"        
+) %>%
+  as_tibble() %>%
+ 
+  rename_with(~ paste0(".pred_", .), everything()) %>%
+  
+  bind_cols(truth = test_baked$mental_health_status)
 
-# 3. Fit the finalized workflow on ALL of your training data
-rf_final_fit <- rf_final_wf %>%
-  fit(data = train)
+ord_ll <- ord_probs %>%
+  mn_log_loss(
+    truth      = truth,
+    .pred_Poor,
+    .pred_Fair,
+    .pred_Good,
+    .pred_Excellent
+  )
 
-```
+ord_ll
 
-```{r}
-# 1. Pull out the best hyperparameters by accuracy
-best_boost_params <- boost_res %>% select_best(metric = "accuracy")
-
-# 2. Finalize the workflow
-boost_final_wf <- finalize_workflow(boost_wf, best_boost_params)
-
-# 3. Fit on all of train
-boost_final_fit <- fit(boost_final_wf, data = train)
-
-# 4. Predict on test
-boost_test_probs <- predict(boost_final_fit, new_data = test, type = "prob")
-boost_test_class <- predict(boost_final_fit, new_data = test, type = "class")
-
-boost_test_preds <- bind_cols(boost_test_probs, boost_test_class, test)
-
-# 5. Compute test‐set metrics
-boost_test_metrics <- boost_test_preds %>%
-  metrics(truth = mental_health_status, estimate = .pred_class)
-print(boost_test_metrics)
-
-# 6. Confusion matrix
-boost_test_preds %>%
-  conf_mat(truth = mental_health_status, estimate = .pred_class) %>%
-  autoplot(type = "heatmap") +
-  labs(title = "Boosted Tree Confusion Matrix")
 
 ```
 
-We continue to extract the final ranger object by accuracy and plot the variable importance from the FRF.
+### Variable Importance 
+I continued by pulling the final RF object and plotting to see which features speicifcally drove the predicitions. 
 
 ```{r}
 # 1. Pull out the RF’s best hyperparameters by accuracy
@@ -393,19 +370,19 @@ vip(final_rf_obj) +
   labs(title = "Variable Importance: Final Random Forest")
 ```
 
+### Partial Dependence Plots 
 I utilized the pdp package to assist in visualizing the marginal effects for the key variables/features.
 
 ```{r}
 
 
-# 1. Prep & bake the recipe on your training data
 rec_prep    <- recipe_class %>% prep()
 train_baked <- bake(rec_prep, new_data = train)
 
-# 2. Extract the raw ranger model
+
 final_rf_obj <- extract_fit_parsnip(rf_final_fit)$fit
 
-# 3. Compute the PDP, supplying train_baked explicitly
+
 pdp_tech <- partial(
   object          = final_rf_obj,
   pred.var        = "technology_usage_hours",
@@ -414,7 +391,7 @@ pdp_tech <- partial(
   grid.resolution = 25
 )
 
-# 4. Plot it
+
 autoplot(pdp_tech) +
   labs(
     title = "Partial-Dependence: Technology Usage",
@@ -426,7 +403,7 @@ autoplot(pdp_tech) +
 ```
 
 ```{r}
-# (reuse rec_prep, train_baked, final_rf_obj from before)
+
 
 pdp_sleep <- partial(
   final_rf_obj,
@@ -466,27 +443,52 @@ autoplot(pdp_ratio) +
 
 ```
 
-Here you can visualize the accuracy, kappa, and logloss for the three models.
+### Performance Comparison Table 
+Here you can visualize the accuracy, kappa, and logloss for the two predictive modele for side-by-side comparison. 
 
 ```{r}
-results_tbl <- tribble(
-  ~Model,                  ~Accuracy, ~Kappa,   ~LogLoss,
-  "Random Forest",         0.2696,    0.0261,   1.40,
-  "Ordinal Logistic (polr)", 0.2379, -0.0293,  NA,
-  "XGBoost",               0.2379,   -0.0166,  NA
+
+# 1. RF accuracy & kappa (you already have rf_test_metrics)
+rf_acc   <- rf_test_metrics %>% filter(.metric == "accuracy") %>% pull(.estimate)
+rf_kappa <- rf_test_metrics %>% filter(.metric == "kap")      %>% pull(.estimate)
+
+# 2. Ordinal logit accuracy & kappa (from polr_metrics)
+ord_acc   <- polr_metrics  %>% filter(.metric == "accuracy") %>% pull(.estimate)
+ord_kappa <- polr_metrics  %>% filter(.metric == "kap")      %>% pull(.estimate)
+
+```
+```{r}
+
+# 1. Pull out RF accuracy & kappa
+rf_acc   <- rf_test_metrics %>% filter(.metric == "accuracy") %>% pull(.estimate)
+rf_kappa <- rf_test_metrics %>% filter(.metric == "kap")      %>% pull(.estimate)
+
+# 2. Pull out ordinal accuracy & kappa
+ord_acc   <- polr_metrics  %>% filter(.metric == "accuracy") %>% pull(.estimate)
+ord_kappa <- polr_metrics  %>% filter(.metric == "kap")      %>% pull(.estimate)
+
+# 3. Extract the single log‐loss numbers
+rf_ll_val  <- rf_ll  %>% pull(.estimate)
+ord_ll_val <- ord_ll %>% pull(.estimate)
+
+# 4. Build the two‐row comparison table
+comparison_tbl <- tibble(
+  Model    = c("Random Forest", "Ordinal Logistic"),
+  Accuracy = c(rf_acc,   ord_acc),
+  Kappa    = c(rf_kappa, ord_kappa),
+  LogLoss  = c(rf_ll_val, ord_ll_val)
 )
 
-results_tbl %>%
-  kable(digits = c(NA, 4, 4, 2),
-        caption = "Test-set Performance of All Models") %>%
+# 5. Render
+comparison_tbl %>%
+  kable(digits = 4, caption = "Test-set Performance Comparison") %>%
   kable_styling(full_width = FALSE)
-
 
 ```
 
 # Conclusion
 
-The random forest predictive model achieved the highest accuracy at ~27%, which was then followed by the other two models around \~24% accuracy. This displays an incredibly modest predictive model, which indicates that technology usage only only captures a sliver of mental health variances. Notably, screen time and social media usage were found to be the most influential predictors, whilst sleep and physical activity contributed much less.
+The random forest predictive model achieved the highest accuracy at \~27%, which was then followed by the other two models around \~24% accuracy. This displays an incredibly modest predictive model, which indicates that technology usage only only captures a sliver of mental health variances. Notably, screen time and social media usage were found to be the most influential predictors, whilst sleep and physical activity contributed much less.
 
 For future work, having larger, more broad samples of data would be beneficial to create a more accurate mode. As well as integrating various psychosocial metrics to measure mood and social supports instead of self-report response, may assist in providing deeper insights overall.
 
